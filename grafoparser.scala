@@ -67,15 +67,21 @@ abstract class GrafoBase[T, U]{
 		}
 	}
 	 def printPeso(k: Int){
-		println(f"Peso ${lados(k).valor}")
+		if (lados.length > k){
+			println(f"Peso ${lados(k).valor}")
+		}
 	 }
 
 	 def actualizarPeso(k: Int, p: U){
-		lados(k).valor = p
+		if (lados.length > k){
+			lados(k).valor = p
+		}
 	 }
 
 	def eliminarLado(k: Int){
-		lados.remove(k)
+		if (lados.length > k){
+			lados.remove(k)
+		}
 	}
 
 	def eliminarNodo(llave: T){
@@ -118,8 +124,16 @@ trait RecorridoGrafos[T,U] extends GrafoBase[T,U] {
 
 		dfs_aux(nombreInicial)
         nodosVisitados
+	}	
+	
+	def printDFS(nombreInicial: T){
+		val lista = dfs(nombreInicial)
+		for(elem <- lista){
+			println(elem)
+		}
 	}
 		
+
 	def bfs(nombreInicial: T) : MutableList[T] = {
         val cola: Queue[T] = Queue(nombreInicial)
         val nodosVisitados: MutableList[T] = new MutableList()
@@ -137,9 +151,15 @@ trait RecorridoGrafos[T,U] extends GrafoBase[T,U] {
 				bfs_aux
 			}
 		}
-
 		bfs_aux
         nodosVisitados
+	}
+
+	def printBFS(nombreInicial: T){
+		val lista = dfs(nombreInicial)
+		for(elem <- lista){
+			println(elem)
+		}
 	}
 }
 
@@ -177,6 +197,18 @@ class GrafoDirigido[T,U] extends GrafoConstruible[T,U] with RecorridoGrafos[T,U]
         else None
 
 	override def addLado(fuente: T, destino: T, peso: U){
+		val a = new Lado(nodos(fuente),nodos(destino), peso)
+		lados += a
+		nodos(fuente).adj = a :: nodos(fuente).adj
+	}
+
+	def addLadoSeguro(fuente: T, destino: T, peso: U){
+		if (!nodos.contains(fuente)){
+			addNodo(fuente)
+		}
+		if (!nodos.contains(destino)){
+			addNodo(destino)
+		}
 		val a = new Lado(nodos(fuente),nodos(destino), peso)
 		lados += a
 		nodos(fuente).adj = a :: nodos(fuente).adj
@@ -277,10 +309,10 @@ object InterpreteGrafo {
      def apply(comando: Comando)  = {
          comando match {
              case NodoAdd(n)           => grafo.addNodo(n); grafo.printNodos
-             case LadoAdd(n1, n2, p)   => grafo.addLado(n1, n2, p); grafo.printLados
+             case LadoAdd(n1, n2, p)   => grafo.addLadoSeguro(n1, n2, p); grafo.printLados
              case MultiLado(n1, n2, p) => {
-                 grafo.addLado(n1, n2, p) 
-                 grafo.addLado(n2, n1, p)
+                 grafo.addLadoSeguro(n1, n2, p) 
+                 grafo.addLadoSeguro(n2, n1, p)
                  grafo.printLados
              }
 
@@ -291,11 +323,11 @@ object InterpreteGrafo {
              case ActualizaPeso(k, p) => grafo.actualizarPeso(k, p); grafo.printLados
 
              case EliminaNodo(n) => grafo.eliminarNodo(n); grafo.printNodos
-             case EliminaLado(k) => grafo.eliminarLado(k); grafo.printNodos
+             case EliminaLado(k) => grafo.eliminarLado(k); grafo.printLados
              case Reiniciar()    => grafo.reiniciar
 
-             case Bfs(n) => grafo.bfs(n)
-             case Dfs(n) => grafo.dfs(n)
+             case Bfs(n) => grafo.printBFS(n)
+             case Dfs(n) => grafo.printDFS(n)
 
              case Salir() => ()
          }
@@ -338,10 +370,12 @@ object REPL {
 	def loop {
 		while(true){
 			val entrada = StdIn.readLine("-Comando:")
-			parser.parseAll(parser.comando,entrada) match {
-				case Success(Salir(),_) => return
-				case Success(x,_) => InterpreteGrafo(x)
-				case err: NoSuccess => println(err)	
+			if (entrada.length > 0){
+				parser.parseAll(parser.comando,entrada) match {
+					case Success(Salir(),_) => return
+					case Success(x,_) => InterpreteGrafo(x)
+					case err: NoSuccess => println(err)	
+				}
 			}
 		}
 	}
