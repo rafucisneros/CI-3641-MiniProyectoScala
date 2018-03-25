@@ -1,4 +1,6 @@
 import scala.collection.mutable.Queue
+import scala.collection.mutable.MutableList
+
 // Clase Abstracta GrafoBase. 
 // Representara como seran los grafos en su manera basica.
 // T: Tipo del valor de los nodos del grafo.
@@ -47,142 +49,121 @@ abstract class GrafoBase[T, U]{
     }
 }
 
+abstract class GrafosConstruibles[T,U] extends GrafoBase[T,U] {
+    def addLado(lado1: T, lado2: T, peso: U): Unit
+
+    def crearGrafo(nodos: List[T], lados: List[(T,T,U)]) = {
+        nodos.map(n => addNodo(n))
+        lados.map({case (l1, l2, p) => addLado(l1, l2, p) })
+        ()
+    }
+}
+
 // Clase heredará GrafoDirigigo como clase, y un GrafoNoDirigido lo
 // heredera por roles, para mostrar ambas funciones
 trait RecorridoGrafos[T,U] extends GrafoBase[T,U] {
 
-	def dfs(nombreInicial: T) : List[T] = {
-		// Definiciones anidadas de funciones
-		def dfs_aux(nombreInicial: T, visitados: List[T]) : List[T] = {
-			var nodoInicial = nodos(nombreInicial)
-			var nodosVisitados: List[T] = visitados 
-			nodosVisitados = nodoInicial.valor :: nodosVisitados
-			var vecinos = nodoInicial.vecinos
-			for (hijo <- vecinos){
-				if (!(nodosVisitados.contains(hijo.valor))){
-					nodosVisitados = dfs_aux(hijo.valor,nodosVisitados)
-				}
-			}
-			nodosVisitados
+	def dfs(nombreInicial: T) : MutableList[T] = {
+        val nodosVisitados: MutableList[T] = new MutableList()
+
+		def dfs_aux(nombreInicial: T): Unit = {
+            nodosVisitados += nombreInicial
+			val nodoInicial = nodos(nombreInicial)
+			
+			for (hijo <- nodoInicial.vecinos 
+                 if !nodosVisitados.contains(hijo.valor))
+                dfs_aux(hijo.valor)
 		}
-		dfs_aux(nombreInicial,Nil).reverse
+
+		dfs_aux(nombreInicial)
+        nodosVisitados
 	}
 		
+	def bfs(nombreInicial: T) : MutableList[T] = {
+        val cola: Queue[T] = Queue(nombreInicial)
+        val nodosVisitados: MutableList[T] = new MutableList()
 
-	def bfs(nombreInicial: T) : List[T] = {	
-		def bfs_aux(nombreInicial: T, cola: Queue[T], visitados: List[T]) : List[T] = {
-			var nodoInicial = nodos(nombreInicial)
-			var nodosVisitados = nombreInicial :: visitados
-			var vecinos = nodoInicial.vecinos
-			for(hijo <- vecinos){
-				if(!nodosVisitados.contains(hijo.valor)){
-					cola.enqueue(hijo.valor)
-				}
-			}
-			cola.dequeue
+		def bfs_aux: Unit = {
+            val nombreInicial = cola.dequeue
+            nodosVisitados += nombreInicial
+            val nodoInicial = nodos(nombreInicial)
+
+			for(hijo <- nodoInicial.vecinos
+				if !nodosVisitados.contains(hijo.valor))
+				cola.enqueue(hijo.valor)
+			
 			if (!cola.isEmpty){
-				nodosVisitados = bfs_aux(cola(0), cola, nodosVisitados)
-			}			
-			nodosVisitados
+				bfs_aux
+			}
 		}
-		bfs_aux(nombreInicial, Queue(nombreInicial), Nil).reverse
+
+		bfs_aux
+        nodosVisitados
 	}
 }
 
-
-class GrafoNoDirigido[T, U] extends GrafoBase[T, U]{
+class GrafoNoDirigido[T, U] extends GrafosConstruibles[T,U]{
     def otroLado(l: Lado, n: Nodo): Option[Nodo] = 
         if (l.n1 == n) Some(l.n2)
         else if (l.n2 == n) Some(l.n1)
         else None
 
-    def addLado(lado1: T, lado2: T, peso: U) = {
+    override def addLado(lado1: T, lado2: T, peso: U) = {
         val l = new Lado(nodos(lado1), nodos(lado2), peso)
         lados = l :: lados
         nodos(lado1).adj = l :: nodos(lado1).adj
         nodos(lado2).adj = l :: nodos(lado2).adj
     }
+
+    def this(nodos: List[T], lados: List[(T,T,U)]) = {
+        this()
+        crearGrafo(nodos, lados)
+    }
 }
 
-class GrafoDirigido[T,U] extends GrafoBase[T,U] with RecorridoGrafos[T,U]{
+class GrafoDirigido[T,U] extends GrafosConstruibles[T,U] with RecorridoGrafos[T,U]{
     def otroLado(l: Lado, n: Nodo): Option[Nodo] = 
         if (l.n1 == n) Some(l.n2)
         else None
 
-	def addLado(fuente: T, destino: T, peso: U){
+	override def addLado(fuente: T, destino: T, peso: U){
 		val a = new Lado(nodos(fuente),nodos(destino), peso)
 		lados = a :: lados
 		nodos(fuente).adj = a :: nodos(fuente).adj
 	}
+
+    def this(nodos: List[T], lados: List[(T,T,U)]) = {
+        this()
+        crearGrafo(nodos, lados)
+    }
 }
-        
-var grafoNoDirigido = new GrafoNoDirigido[String,Int] with RecorridoGrafos[String,Int]
-grafoNoDirigido.addNodo("1") 
-grafoNoDirigido.addNodo("11") 
-grafoNoDirigido.addNodo("12") 
-grafoNoDirigido.addNodo("13") 
-grafoNoDirigido.addNodo("14") 
-grafoNoDirigido.addNodo("111") 
-grafoNoDirigido.addNodo("112") 
-grafoNoDirigido.addNodo("113") 
-grafoNoDirigido.addNodo("121") 
-grafoNoDirigido.addNodo("122") 
-grafoNoDirigido.addNodo("123") 
-grafoNoDirigido.addNodo("131") 
-grafoNoDirigido.addNodo("132") 
-grafoNoDirigido.addNodo("133") 
-grafoNoDirigido.addNodo("141") 
-grafoNoDirigido.addNodo("142") 
-grafoNoDirigido.addNodo("143")
-grafoNoDirigido.addLado("1","11",1)
-grafoNoDirigido.addLado("1","12",1)
-grafoNoDirigido.addLado("1","13",1)
-grafoNoDirigido.addLado("1","14",1)
-grafoNoDirigido.addLado("11","111",1)
-grafoNoDirigido.addLado("11","112",1)
-grafoNoDirigido.addLado("11","113",1)
-grafoNoDirigido.addLado("12","121",1)
-grafoNoDirigido.addLado("12","122",1)
-grafoNoDirigido.addLado("12","123",1)
-grafoNoDirigido.addLado("13","131",1)
-grafoNoDirigido.addLado("13","132",1)
-grafoNoDirigido.addLado("13","133",1)
-grafoNoDirigido.addLado("14","141",1)
-grafoNoDirigido.addLado("14","142",1)
-grafoNoDirigido.addLado("14","143",1)
-var grafoDirigido = new GrafoDirigido[String,Int]
-grafoDirigido.addNodo("1") 
-grafoDirigido.addNodo("11") 
-grafoDirigido.addNodo("12") 
-grafoDirigido.addNodo("13") 
-grafoDirigido.addNodo("14") 
-grafoDirigido.addNodo("111") 
-grafoDirigido.addNodo("112") 
-grafoDirigido.addNodo("113") 
-grafoDirigido.addNodo("121") 
-grafoDirigido.addNodo("122") 
-grafoDirigido.addNodo("123") 
-grafoDirigido.addNodo("131") 
-grafoDirigido.addNodo("132") 
-grafoDirigido.addNodo("133") 
-grafoDirigido.addNodo("141") 
-grafoDirigido.addNodo("142") 
-grafoDirigido.addNodo("143")
-grafoDirigido.addLado("1","11",1)
-grafoDirigido.addLado("1","12",1)
-grafoDirigido.addLado("1","13",1)
-grafoDirigido.addLado("1","14",1)
-grafoDirigido.addLado("11","111",1)
-grafoDirigido.addLado("11","112",1)
-grafoDirigido.addLado("11","113",1)
-grafoDirigido.addLado("12","121",1)
-grafoDirigido.addLado("12","122",1)
-grafoDirigido.addLado("12","123",1)
-grafoDirigido.addLado("13","131",1)
-grafoDirigido.addLado("13","132",1)
-grafoDirigido.addLado("13","133",1)
-grafoDirigido.addLado("14","141",1)
-grafoDirigido.addLado("14","142",1)
-grafoDirigido.addLado("14","143",1)
 
+val grafoNoDirigido = new GrafoNoDirigido[String,Int] with RecorridoGrafos[String,Int]
 
+grafoNoDirigido.crearGrafo(
+    List( "A", "AA", "AB", "AC", "AD", 
+          "AAA", "AAB", "AAC", "ABA", "ABB", "ABC", 
+          "ACA", "ACB", "ACC", "ADA", "ADB", "ADC"
+        ),
+    List( ("A","AA",5),("A","AB",5),("A","AC",5),
+          ("A","AD",5),("AA","AAA",5),("AA","AAB",5),
+          ("AA","AAC",5),("AB","ABA",5),("AB","ABB",5),
+          ("AB","ABC",5),("AC","ACA",5),("AC","ACB",5),
+          ("AC","ACC",5),("AD","ADA",5),("AD","ADB",5),
+          ("AD","ADC",5)
+        )
+)
+
+var grafoDirigido = new GrafoDirigido[String,Int](
+    List( "A", "AA", "AB", "AC", "AD", 
+          "AAA", "AAB", "AAC", "ABA", "ABB", "ABC", 
+          "ACA", "ACB", "ACC", "ADA", "ADB", "ADC"
+        ),
+    List( ("A","AA",5),("A","AB",5),("A","AC",5),
+          ("A","AD",5),("AA","AAA",5),("AA","AAB",5),
+          ("AA","AAC",5),("AB","ABA",5),("AB","ABB",5),
+          ("AB","ABC",5),("AC","ACA",5),("AC","ACB",5),
+          ("AC","ACC",5),("AD","ADA",5),("AD","ADB",5),
+          ("AD","ADC",5)
+        )
+)
