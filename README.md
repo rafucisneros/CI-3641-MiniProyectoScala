@@ -16,12 +16,11 @@ Parser, interprete y REPL de una calculadora simple.
 Para ejecutar la calculadora se usa el comando:
 scala calculadora.scala
     
-Los operadores de esta calculadora serán, +, -, *, /, % y ^ para sus
-respectivas operaciones matemáticas incluidos el + y el - unarios y el operador
-= para la asignación de variables. Las variables aceptadas será cualquier
-palabra en minúsculas, y los números serán enteros o con decimales. Se puede
-asignar a una variable cualquier expresión excepto por otras asignaciones. El 
-programa finaliza al presionar Enter sin nada escrito.
+Los operadores de esta calculadora serán, +, -, *, /, % y ^ para sus respectivas operaciones matemáticas 
+incluidos el + y el - unarios y el operador = para la asignación de variables. Las variables aceptadas
+será cualquier palabra en minúsculas, y los números serán enteros o con decimales. Se puede asignar a una
+variable cualquier expresión excepto por otras asignaciones. El programa finaliza al presionar Enter sin 
+nada escrito.
 ```
 ```
 Para ejecutar el interprete de comandos para grafos se usa el comando:
