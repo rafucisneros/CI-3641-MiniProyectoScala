@@ -5,8 +5,9 @@ Parser, interprete y REPL de una calculadora simple.
 Windows:
         Descargar los binarios de Scala para windows en el siguiente link.
         https://www.scala-lang.org/download/
+
 Linux:
-        Usar en la consola de comandos
+        Usar en la consola de comandos  
 ```
 sudo apt-get install Scala
 ```
