@@ -1,18 +1,20 @@
 # CI-3641-Scala-RegexParser-
 Parser, interprete y REPL de una calculadora simple.
 
-Instalacion: \n
-    Windows:
-        Descargar los binarios de Scala para windows en el siguiente link.
-        https://www.scala-lang.org/download/
-    Linux:
-        Usar en la consola de comandos
-        sudo apt-get install Scala
+Instalacion:
+Windows:
+Descargar los binarios de Scala para windows en el siguiente link.
+https://www.scala-lang.org/download/
+Linux:
+Usar en la consola de comandos
+sudo apt-get install Scala
 
 
 Ejecucion de los programas:
-    Para ejecutar la calculadora se usa el comando:
-    scala calculadora.scala
+
+Para ejecutar la calculadora se usa el comando:
+scala calculadora.scala
+
 Los operadores de esta calculadora serán +, -, \*, /, % y ^ para sus respectivas operaciones 
 matemáticas incluidos el + y el - unarios y el operador = para la asignación de variables.
 Las variables aceptadas será cualquier palabra en minúsculas, y los números serán enteros o 
