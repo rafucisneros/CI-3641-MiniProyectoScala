@@ -12,15 +12,17 @@ Parser, interprete y REPL de una calculadora simple.
 ```
 
 # Ejecucion de los programas:
-    Para ejecutar la calculadora se usa el comando:
-    scala calculadora.scala
+```
+Para ejecutar la calculadora se usa el comando:
+scala calculadora.scala
     
 Los operadores de esta calculadora serán, +, -, *, /, % y ^ para sus
 respectivas operaciones matemáticas incluidos el + y el - unarios y el operador
 = para la asignación de variables. Las variables aceptadas será cualquier
 palabra en minúsculas, y los números serán enteros o con decimales. Se puede
 asignar a una variable cualquier expresión excepto por otras asignaciones. El programa finaliza al presionar Enter sin nada escrito.
-
+```
+```
 Para ejecutar el interprete de comandos para grafos se usa el comando:
 scala parsergrafos.scala
     
@@ -37,3 +39,4 @@ edge x y: actualiza el peso del x-esimo lado al valor y
 bfs x: imprime el recorrido bfs del grafo iniciando desde el nodo con valor x
 dfs x: imprime el recorrido dfs del grafo iniciando desde el nodo con valor x    
 quit: Termine el programa
+```
