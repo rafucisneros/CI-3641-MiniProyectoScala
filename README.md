@@ -8,7 +8,7 @@ Windows:
 Linux:
         Usar en la consola de comandos
 ```
-        sudo apt-get Scala
+sudo apt-get install Scala
 ```
 
 Para ambos es necesario tener instalado Java JDK 8.
