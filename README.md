@@ -42,8 +42,7 @@ El interprete inicia con un multigrafo dirigido vacío. Se agregan nodos introdu
 con letra Mayuscula. Se agregan nodos escribiendo los nombres de dos nodos, entre ambos nombres se indica 
 la direccion del lado con ->,<- o <->,  y opcionalmente el peso del lado. Si no se espefica el peso, este 
 será cero.
-Ejemplo: Si A, y B fueron nodos introducidos, un lado entre A y B se agrega escribiendo alguna de las 
-siguientes formas: A -> B, A -> B 2, A <- B, A <- B 10, A <-> B ó A <-> B 6
+Ejemplos: 
 ```
 > A
 Nodos:
