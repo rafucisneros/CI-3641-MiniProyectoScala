@@ -1,7 +1,7 @@
 # CI-3641-Scala-RegexParser-
 Parser, interprete y REPL de una calculadora simple.
 
-Instalacion:
+Instalacion: \n
     Windows:
         Descargar los binarios de Scala para windows en el siguiente link.
         https://www.scala-lang.org/download/
