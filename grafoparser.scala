@@ -6,6 +6,7 @@ import scala.util.parsing.input.CharSequenceReader
 import scala.collection.mutable.{Map => MutableMap}
 import scala.io.StdIn
 import scala.collection.mutable.ArrayBuffer
+
 // Clase Abstracta GrafoBase. 
 // Representara como seran los grafos en su manera basica.
 // T: Tipo del valor de los nodos del grafo.
@@ -18,28 +19,17 @@ abstract class GrafoBase[T, U]{
     // usar pattern matching para capturar el tipo correcto.
 
     // Clase Lado. Representara un lado del grafo.
-    // n1, n2: Nodos unidos por este lado.
-    // valor: peso del lado.
     case class Lado(n1: Nodo, n2: Nodo, var valor: U) {
-        // comoTupla: Devuelve la representacion como tupla del
-        // objeto, devolviendo el valor de cada nodo seguido
-        // por el peso del lado.
         def comoTupla = (n1.valor, n2.valor, valor)
     }
 
     // Clase Nodo. Representara un nodo del grafo.
-    // valor: Valor del nodo
     case class Nodo(valor: T) {
-        // Lista de lado que inciden sobre este nodo
         var adj: List[Lado] = Nil
-        // Devuelve la lista de vecinos de este nodo
-        // Mapeamos sobre esta lista la funcion "otroLado"
-        // para conseguirlos.
         def vecinos: List[Nodo] = adj.map(otroLado(_, this).get)
     }
+
     //Mapa de nodos del grafo
-    //key de tipo valor del nodo
-    //value es el nodo mismo
     var nodos: Map[T, Nodo] = Map()
 
     //Lista de Lados del grafo
@@ -96,6 +86,9 @@ abstract class GrafoBase[T, U]{
 	}
 }
 
+// Clase GrafoConstruible.
+// Representara Grafos con la capacidad de ser construidos mediante
+// la combinacion de una lista de nodos y una lista de lados
 abstract class GrafoConstruible[T,U] extends GrafoBase[T,U] {
     def addLado(lado1: T, lado2: T, peso: U): Unit
 
@@ -156,22 +149,14 @@ trait RecorridoGrafos[T,U] extends GrafoBase[T,U] {
 	}
 
 	def printBFS(nombreInicial: T){
-		val lista = dfs(nombreInicial)
+		val lista = bfs(nombreInicial)
 		for(elem <- lista){
 			println(elem)
 		}
 	}
 }
 
-// printNodos
-// printLados
-// printPeso(k)
-// trait GrafoImprimible[T,U] extends GrafoBase[T,U] {
-//     def printNodos = {
-//         println("Nodo")
-//     }
-// } 
-
+// Clase que representa Grafos no Dirigidos, hereda de GrafosConstruibles
 class GrafoNoDirigido[T, U] extends GrafoConstruible[T,U]{
     def otroLado(l: Lado, n: Nodo): Option[Nodo] = 
         if (l.n1 == n) Some(l.n2)
@@ -191,6 +176,8 @@ class GrafoNoDirigido[T, U] extends GrafoConstruible[T,U]{
     }
 }
 
+// Clase que representa Grafos Dirigidos, hereda de GrafosConstruibles
+// y se agregara el trait de RecorridoGrafos como un mixin
 class GrafoDirigido[T,U] extends GrafoConstruible[T,U] with RecorridoGrafos[T,U]{
     def otroLado(l: Lado, n: Nodo): Option[Nodo] = 
         if (l.n1 == n) Some(l.n2)
@@ -220,10 +207,9 @@ class GrafoDirigido[T,U] extends GrafoConstruible[T,U] with RecorridoGrafos[T,U]
     }
 }
 
-// val grafoNoDirigido = new GrafoNoDirigido[String,Int] with RecorridoGrafos[String,Int]
+// Parser para mini-lenguaje manejador de grafos
 
 // Arbol Sintactico 
-
 sealed trait Comando
 //Agregar
 case class NodoAdd(nombre: String) extends Comando
@@ -246,19 +232,20 @@ case class Dfs(nombre: String) extends Comando
 case class Salir() extends Comando
 
 // Operadores
-
 sealed trait Flechas
 case object Derecha extends Flechas
 case object Izquierda extends Flechas
 case object Doble extends Flechas
 
-
+// Parser para comandos del lenguaje
 class ParserGrafo extends RegexParsers with PackratParsers {
-    // Regex
+    // Regex para capturar ciertos tokens variables significativos
     val decimal = "\\d+(\\.\\d*)?|\\d*\\.\\d+".r
     val numero = "0|[0-9][1-9]*".r
     val nodo = "[A-Z][A-Za-z]*".r
 
+    // regla agregar
+    // agregar = nodo ~ [("<->"|"->"|"<-") ~ nodo ~ [decimal]]
     lazy val agregar: PackratParser[Comando] = {
         nodo ~ opt(("<->"  ^^^ Doble   |
                     "->"  ^^^ Derecha  |
@@ -275,6 +262,11 @@ class ParserGrafo extends RegexParsers with PackratParsers {
         }
     }
 
+    // regla consultar
+    // consultarnodos = "nodes"
+    // consultarlados = "edges"
+    // actualizarlado  = "edge" ~ numero ~ [decimal]
+    // consultar = consultarnodos | consultarlados | actualizarlado
     lazy val consultar: PackratParser[Comando] = {
         "nodes"^^^ConsultaNodos() |
         "edges"^^^ConsultaLados() |
@@ -284,19 +276,29 @@ class ParserGrafo extends RegexParsers with PackratParsers {
         }
     }
 
+    // regla eliminar
+    // eliminarelem  = "del" ~ (nodo|numero)
+    // eliminargrafo = "reset"
+    // eliminar = eliminarelem | eliminargrafo
     lazy val eliminar: PackratParser[Comando] = {
         "del" ~> nodo   ^^ {n => EliminaNodo(n)} |
         "del" ~> numero ^^ {n => EliminaLado(n.toInt)} |
         "reset"^^^Reiniciar() 
     }
 
+    // regla recorrido
+    // recorrido = ("bfs" | "dfs") ~ nodo
     lazy val recorrido: PackratParser[Comando] = {
         "bfs" ~> nodo ^^ {n => Bfs(n)} |
         "dfs" ~> nodo ^^ {n => Dfs(n)}
     }
 
+    // regla salir
+    // salir = "quit"
     lazy val salir: PackratParser[Comando] = "quit"^^^{Salir()}
 
+    // regla inicial comando:
+    // comando = salir | recorrido | eliminar | consultar | agregar
     lazy val comando: PackratParser[Comando] = salir | recorrido | eliminar | consultar | agregar
 
     def parseAll[T](p: Parser[T], input:String) = 
@@ -333,43 +335,13 @@ object InterpreteGrafo {
          }
      }
 }
-/*
-val grafoNoDirigido = new GrafoNoDirigido[String,Int] with RecorridoGrafos[String,Int]
-
-grafoNoDirigido.crearGrafo(
-    List( "A", "AA", "AB", "AC", "AD", 
-          "AAA", "AAB", "AAC", "ABA", "ABB", "ABC", 
-          "ACA", "ACB", "ACC", "ADA", "ADB", "ADC"
-        ),
-    List( ("A","AA",5),("A","AB",5),("A","AC",5),
-          ("A","AD",5),("AA","AAA",5),("AA","AAB",5),
-          ("AA","AAC",5),("AB","ABA",5),("AB","ABB",5),
-          ("AB","ABC",5),("AC","ACA",5),("AC","ACB",5),
-          ("AC","ACC",5),("AD","ADA",5),("AD","ADB",5),
-          ("AD","ADC",5)
-        )
-)
-
-var grafoDirigido = new GrafoDirigido[String,Int](
-    List( "A", "AA", "AB", "AC", "AD", 
-          "AAA", "AAB", "AAC", "ABA", "ABB", "ABC", 
-          "ACA", "ACB", "ACC", "ADA", "ADB", "ADC"
-        ),
-    List( ("A","AA",5),("A","AB",5),("A","AC",5),
-          ("A","AD",5),("AA","AAA",5),("AA","AAB",5),
-          ("AA","AAC",5),("AB","ABA",5),("AB","ABB",5),
-          ("AB","ABC",5),("AC","ACA",5),("AC","ACB",5),
-          ("AC","ACC",5),("AD","ADA",5),("AD","ADB",5),
-          ("AD","ADC",5)
-        )
-)*/
 
 object REPL {
 	import parser.{Success, NoSuccess}
 	val parser = new ParserGrafo
 	def loop {
 		while(true){
-			val entrada = StdIn.readLine("-Comando:")
+			val entrada = StdIn.readLine("Grafo> ")
 			if (entrada.length > 0){
 				parser.parseAll(parser.comando,entrada) match {
 					case Success(Salir(),_) => return
