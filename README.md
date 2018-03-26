@@ -1,5 +1,5 @@
-# CI-3641-Scala-RegexParser-
-Parser, interprete y REPL de una calculadora simple.
+# CI-3641-MiniProyecto
+Parser, interprete y REPL de una calculadora simple y un minilenguaje de manejo de Grafos.
 
 ## Instalacion:
 * Windows:
